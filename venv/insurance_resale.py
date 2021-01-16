@@ -39,7 +39,7 @@ def report():
     rep = t_i.merge(r_i)
     rep["resale %"] = round((rep.resale_apps/rep.total_apps)*100, 0)
     # pprint(rep)
-    # rep.to_excel(date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="insurance resale")
+    rep.to_excel(date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="insurance_resale")
 
     def global_review_apps():
         total_insurance_query = "select count(distinct (ca.id)) as 'total_insurance' from credit_application ca join anketa_step anst on ca.id = anst.app_id join staff_action sa on ca.id = sa.app_id where ca.creation_date between " + date_1 + " and " + date_2 + " and anst.step ='waitingReviewInsurance' and sa.action in ('resaleInsurance', 'refusalInsurance', 'nextWithoutInsurance') and " + operordict[loan_gen] + ""
@@ -69,9 +69,10 @@ def report():
         concat_df = pd.concat((a, b, c, d, e, f, g), ignore_index=True)
         sub_rep = concat_df.dropna(thresh=1)
 
-        pprint(sub_rep)
+        # pprint(sub_rep)
+        sub_rep.to_excel("glob_review" + date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="global_review")
 
-    global_review_apps()
+        global_review_apps()
 
 
 report()
