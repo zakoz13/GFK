@@ -4,14 +4,14 @@ from sqlalchemy import create_engine
 import pandas as pd
 from pprint import pprint
 
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
 
 def report():
     engine = create_engine("mysql+pymysql://ml_user:U5VVYcxx@46.182.24.8:3306/gfk", pool_pre_ping=True)
     conn = engine.connect()
-
-    pd.set_option('display.max_rows', 500)
-    pd.set_option('display.max_columns', 500)
-    pd.set_option('display.width', 1000)
 
     date_1 = input("Введите дату от в формате YYYY-MM-DD: ")
     date_2 = input("Введите дату до в формате YYYY-MM-DD: ")
@@ -38,8 +38,9 @@ def report():
     r_i = pd.DataFrame(y)
     rep = t_i.merge(r_i)
     rep["resale %"] = round((rep.resale_apps/rep.total_apps)*100, 0)
+
     # pprint(rep)
-    rep.to_excel(date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="insurance_resale")
+    rep.to_excel("ins_resale" + date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="insurance resale")
 
     def global_review_apps():
         total_insurance_query = "select count(distinct (ca.id)) as 'total_insurance' from credit_application ca join anketa_step anst on ca.id = anst.app_id join staff_action sa on ca.id = sa.app_id where ca.creation_date between " + date_1 + " and " + date_2 + " and anst.step ='waitingReviewInsurance' and sa.action in ('resaleInsurance', 'refusalInsurance', 'nextWithoutInsurance') and " + operordict[loan_gen] + ""
@@ -70,9 +71,9 @@ def report():
         sub_rep = concat_df.dropna(thresh=1)
 
         # pprint(sub_rep)
-        sub_rep.to_excel("glob_review" + date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="global_review")
+        sub_rep.to_excel("total_review" + date_1 + " - " + date_2 + " ; " + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="insurance resale")
 
-        global_review_apps()
+    global_review_apps()
 
 
 report()
