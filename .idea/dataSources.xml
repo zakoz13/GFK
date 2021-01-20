@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="@gfk" read-only="true" uuid="2daa3b83-1587-44b9-bc8d-1d25ec8af99d">
+    <data-source source="LOCAL" name="gfk" uuid="fd4cb455-6be6-414d-9c23-39fed9cc9a8c">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://46.182.24.8:3306/</jdbc-url>
+      <jdbc-url>jdbc:mysql://46.182.24.8:3306</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <driver-properties>
         <property name="serverTimezone" value="GMT" />
