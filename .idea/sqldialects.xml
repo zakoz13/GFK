@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/venv/approval_apps.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/insurance_resale.py" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/venv/testing.py" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>

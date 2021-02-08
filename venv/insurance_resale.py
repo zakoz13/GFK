@@ -11,7 +11,7 @@ pd.set_option('display.width', 1000)
 
 
 def report():
-    engine = create_engine("mysql+pymysql://ml_user:U5VVYcxx@46.182.24.8:3306/gfk", pool_pre_ping=True)
+    engine = create_engine("mysql+pymysql://ml_user:U5VVYcxx@46.182.24.170:3306/gfk", pool_pre_ping=True)
     conn = engine.connect()
 
     def add_quotes(q):
