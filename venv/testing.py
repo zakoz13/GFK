@@ -114,4 +114,5 @@ daily_pct_change.hist(bins=50, sharex=True, figsize=(20, 8))
 # plt.show()
 
 scatter_matrix(daily_pct_change, diagonal='kde', alpha=0.1, figsize=(20, 20))
-plt.show()
+# plt.show()
+
