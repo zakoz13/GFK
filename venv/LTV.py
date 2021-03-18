@@ -22,6 +22,7 @@ def ltv():
 
     date_1 = input("Введите дату начала мониторинга в формате YYYY-MM-DD: ")
     date_2 = input("Введите дату окончания мониторинга  в формате YYYY-MM-DD: ")
+    dict_use = int(input("Преобразовать данные 1 - да, 0 - нет "))
 
     # noinspection SqlAggregates,PyArgumentList
     ltv_df = pd.DataFrame(pd.read_sql_query("select ca.client_id, ca.creation_date, (select sum from loan_history lh where active_end is null and lh.loan_id = max(ca.loan_id)) as debt, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 90 DAY)))) as sum_90, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 180 DAY)))) as sum_180, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 270 DAY)))) as sum_270, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 360 DAY)))) as sum_360, (select total_overdue from loan l where l.id = max(ca.loan_id)) as overdue, info.* from credit_application ca join loan l on ca.client_id = l.client_id join (select c.id as id, last_name, first_name, middle_name, sex, (timestampdiff(year, birth_date, curdate())) as age, marital_status, child_count, living_terms, w.salary, w.employment_sphere, w.position, w.type_of_organization, adh.city as home_city, adp.city as pasport_city, (select max(cnt_closed_loans) from credit_application ca where ca.client_id = c.id) as cnt_closed_loans from client c join work w on c.id = w.client_id left join address adh on c.home_address_id = adh.id left join address adp on c.passport_address_id = adp.id ) as info on info.id = ca.client_id where ca.loan_id is not null and ca.creation_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca.cnt_closed_loans = 0 group by ca.client_id order by ca.creation_date;", conn))
@@ -38,8 +39,7 @@ def ltv():
     ltv_df.loc[(ltv_df["PNL"] >= 0) & (ltv_df["PNL"] <= 2999), "category"] = "0-2.9"
     ltv_df.loc[ltv_df["PNL"] < 0, "category"] = "<0"
 
-    def dict_replace():
-
+    if dict_use == 1:
         sex = {
             "0": "man",
             "1": "woman"
@@ -141,8 +141,6 @@ def ltv():
             4: "Top manager"
         }
         ltv_df["position"].replace(position, inplace=True)
-
-    dict_replace()
 
     cols = ltv_df.columns.tolist()
     cols.remove("id")
