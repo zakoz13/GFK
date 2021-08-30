@@ -40,6 +40,7 @@ def report():
     r_i = pd.DataFrame(y)
     rep = t_i.merge(r_i)
     rep["resale %"] = round((rep.resale_apps/rep.total_apps)*100, 0)
+    rep.loc[(rep.staff_name == 'Ковалёва А.С.'), 'staff_name'] = 'Герасименко А.С.'
 
     # pprint(rep)
     rep.to_excel("ins_resale " + add_quotes(date_1) + " - " + add_quotes(str(datetime.date(pd.to_datetime(date_2) - pd.offsets.Day(1)))) + " loan_gen  =" + str(loan_gen) + ".xlsx", sheet_name="insurance resale")
