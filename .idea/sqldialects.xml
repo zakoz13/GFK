@@ -13,6 +13,9 @@
     <file url="file://$PROJECT_DIR$/venv/sip_calls.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/sql_testing.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/testing.py" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/venv/web_leads_month.py" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/venv/web_leads_week.py" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/venv/webs_leads.py" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>
