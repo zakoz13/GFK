@@ -106,14 +106,23 @@ def web_id():
     source_data = source_data.rename(columns={'CTR%': 'CR%'})
 
     split_lead = source_data['lead_wm'].str.split('_', expand=True)
-    split_lead.columns = ['lead', 'wm', '2', '3']
-    split_lead = split_lead.drop(['2', '3'], axis=1)
+    col_list = len(split_lead.columns)
+
+    if col_list == 4:
+        split_lead.columns = ['lead', 'wm', '2', '3']
+        split_lead = split_lead.drop(['2', '3'], axis=1)
+
+    elif col_list == 2:
+        split_lead.columns = ['lead', 'wm']
+
     source_data = pd.concat([source_data, split_lead], axis=1)
 
     source_data = source_data.reindex(columns=['lead', 'wm', 'lead_wm', 'clicks', 'cnt_app', 'cnt_loan', 'cnt_bad_loans', 'CR%', 'AR_click%', 'AR_app%', 'bad_loans%'])
     source_data = source_data.sort_values(by=['lead', 'clicks'], ascending=[True, False]).reset_index(drop=True)   # сортировка
     source_data['Date_1'] = date_1
     source_data['Date_2'] = date_2
+    source_data['Date'] = source_data['Date_1'].astype(str) + ' - ' + source_data['Date_2'].astype(str)
+    source_data = source_data.drop(['Date_1', 'Date_2'], axis=1)
 
     lead_sum = source_data.groupby('lead', as_index=False).sum()
 
@@ -134,6 +143,8 @@ def web_id():
     lead_sum = lead_sum.sort_values(by=['clicks'], ascending=[False]).reset_index(drop=True)
     lead_sum['Date_1'] = date_1
     lead_sum['Date_2'] = date_2
+    lead_sum['Date'] = lead_sum['Date_1'].astype(str) + ' - ' + lead_sum['Date_2'].astype(str)
+    lead_sum = lead_sum.drop(['Date_1', 'Date_2'], axis=1)
 
     # numeric_columns = ['clicks', 'cnt_app', 'cnt_loan', 'cnt_bad_loans', 'CR%', 'AR_click%', 'AR_app%', 'bad_loans%']
     # lead_sum.style.format('{:.1f}', na_rep='-').format({'lead': lambda x: x.lower()}).highlight_null(null_color='lightgrey').highlight_max(color='yellowgreen', subset=numeric_columns).highlight_min(color='coral', subset=numeric_columns)
