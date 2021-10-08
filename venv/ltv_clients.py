@@ -19,25 +19,29 @@ def ltv():
 
     global result_debt
 
-    def add_quotes(q):
-        return "'" + q + "'"
+    # def add_quotes(q):
+    #     return "'" + q + "'"
 
     # date_1 = input("Введите дату начала мониторинга в формате YYYY-MM-DD: ")
     # date_2 = input("Введите дату окончания мониторинга  в формате YYYY-MM-DD: ")
     dict_use = int(input("Преобразовать данные 1 - да, 0 - нет "))
 
     # noinspection SqlAggregates,PyArgumentList
-    ltv_df = pd.DataFrame(pd.read_sql_query("select ca.client_id, ca.creation_date, (select sum from loan_history lh where active_end is null and lh.loan_id = max(ca.loan_id)) as debt, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 90 DAY)))) as sum_90, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 120 DAY)))) as sum_120, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 270 DAY)))) as sum_270, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 360 DAY)))) as sum_360, (select total_overdue from loan l where l.id = max(ca.loan_id)) as overdue, info.* from credit_application ca join loan l on ca.client_id = l.client_id join (select c.id as id, last_name, first_name, middle_name, sex, (timestampdiff(year, birth_date, curdate())) as age, marital_status, child_count, living_terms, w.salary, w.employment_sphere, w.position, w.type_of_organization, adh.city as home_city, adp.city as pasport_city, (select max(cnt_closed_loans) from credit_application ca where ca.client_id = c.id) as cnt_closed_loans from client c join work w on c.id = w.client_id left join address adh on c.home_address_id = adh.id left join address adp on c.passport_address_id = adp.id ) as info on info.id = ca.client_id where ca.client_id in (1272335, 1312287) and ca.loan_id is not null and ca.cnt_closed_loans = 0 group by ca.client_id order by ca.creation_date;", conn))
+    ltv_df = pd.DataFrame(pd.read_sql_query("select ca.client_id, ca.creation_date, (select sum from loan_history lh where active_end is null and lh.loan_id = max(ca.loan_id)) as debt, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 60 DAY)))) as sum_60, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 120 DAY)))) as sum_120, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 270 DAY)))) as sum_270, sum((select sum(sum) from incoming_transfer it where l.id = it.loan_id and it.destination != 'body' and ca.cnt_closed_loans = 0 and it.type not in ('write-off-reserves', 'cession', 'refund') and (it.creation_date) between ca.creation_date and (DATE_ADD(ca.creation_date, INTERVAL 360 DAY)))) as sum_360, (select total_overdue from loan l where l.id = max(ca.loan_id)) as overdue, info.* from credit_application ca join loan l on ca.client_id = l.client_id join (select c.id as id, last_name, first_name, middle_name, sex, (timestampdiff(year, birth_date, curdate())) as age, marital_status, child_count, living_terms, w.salary, w.employment_sphere, w.position, w.type_of_organization, adh.city as home_city, adp.city as pasport_city, (select max(cnt_closed_loans) from credit_application ca where ca.client_id = c.id) as cnt_closed_loans from client c join work w on c.id = w.client_id left join address adh on c.home_address_id = adh.id left join address adp on c.passport_address_id = adp.id ) as info on info.id = ca.client_id where ca.client_id in (1440539) and ca.loan_id is not null and ca.cnt_closed_loans = 0 group by ca.client_id order by ca.creation_date;", conn))
     ltv_df.fillna(0, inplace=True)
+    print(ltv_df)
+    exit()
 
     search_clients = []
     for client_id in ltv_df.client_id:
-        client_search = pd.DataFrame(pd.read_sql_query("select lh.sum as debt, ca.client_id from loan_history lh join credit_application ca on lh.loan_id = ca.loan_id where lh.active_begin >= (ca.creation_date) and ifnull(lh.active_end, lh.end_date) <= (DATE_ADD(ca.creation_date, INTERVAL 120 DAY )) and ca.client_id = " + str(client_id) + " order by (case lh.id when ifnull(lh.active_end, lh.end_date) <= (date_add(ca.creation_date, interval 120 day )) then lh.id end) desc, (case lh.id when ifnull(lh.active_end, lh.end_date) <= (date_add(ca.creation_date, interval 120 day )) then lh.id end) limit 1;", conn))
+        client_search = pd.DataFrame(pd.read_sql_query("select distinctrow ca.client_id, (select lrs.remaining_body from loan_retro_stat lrs where lrs.loan_id = ca.loan_id and lrs.date = (DATE_ADD(date(ca.creation_date), INTERVAL 60 DAY ))) as debt from credit_application ca where date(ca.creation_date) = (select distinctrow date(ca2.creation_date) from credit_application ca2 where ca.client_id = ca2.client_id and ca2.cnt_closed_loans = 0 and ca2.loan_id is not null) and ca.client_id = " + str(client_id) + " group by ca.client_id;", conn))
         search_clients.append(client_search)
 
         result_debt = pd.concat(search_clients)
         cols_deb = result_debt.columns.tolist()
         result_debt = result_debt[cols_deb]
+    print(result_debt)
+    exit()
 
     final = pd.merge(ltv_df, result_debt, on=['client_id'])
     final['debt_x'] = final['debt_y']
@@ -48,7 +52,7 @@ def ltv():
     final.drop(columns=['debt_x'])
     final.pop('debt_x')
 
-    final["PNL"] = final["sum_120"] - final["debt"]
+    final["PNL"] = final["sum_60"] - final["debt"]
 
     final["category"] = 0
     final.loc[final["PNL"] >= 30000, "category"] = "30+"
@@ -350,7 +354,7 @@ def ltv():
 
     # print(final)
     # print(ltv_df)
-    final.to_excel("LTV_sciba_sverka" + ".xlsx", sheet_name="ltv")
+    final.to_excel("LTV_clients" + ".xlsx", sheet_name="ltv")
     # final.to_csv("loan date " + add_quotes(date_1) + " - " + add_quotes(str(datetime.date(pd.to_datetime(date_2) - pd.offsets.Day(1)))) + ".csv")
 
 

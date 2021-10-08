@@ -3,13 +3,13 @@ import sqlalchemy as sal
 from sqlalchemy import create_engine
 import pandas as pd
 from pprint import pprint
+import datetime
 from datetime import datetime
 from pandas.tseries.offsets import DateOffset
 import json
 from pandas.io.json import json_normalize
 import numpy as np
-# import seaborn as sns
-# import matplotlib.pyplot as plt
+
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -26,9 +26,13 @@ def add_quotes(q):
 def web_id():
 
     date_1 = input("Введите дату начала мониторинга в формате YYYY-MM-DD: ")
-    date_2 = input("Введите дату окончания мониторинга  в формате YYYY-MM-DD: ")
+    # year1, month1, day1 = map(int, date_1.split('-'))
+    # day2 = day1 + 6
+    # date_2 = f'{year1}-{month1}-{day2}'
+    n = int(input("Введите количество дней мониторинга -1  "))
+    date_2 = str((datetime.date(pd.to_datetime(date_1) + pd.offsets.Day(n))))
 
-    data = pd.DataFrame(pd.read_sql_query("select ld.lead_data, ld.created_at from lead_click ld where ld.created_at between " + add_quotes(date_1) + " and " + add_quotes(date_2) + "", conn))
+    data = pd.DataFrame(pd.read_sql_query("select ld.lead_data, ld.created_at from lead_click ld where date(ld.created_at) between " + add_quotes(date_1) + " and " + add_quotes(date_2) + "", conn))
 
     lead_data = data['lead_data']
     lead_data = lead_data.dropna()
@@ -67,7 +71,7 @@ def web_id():
     final_count = utm_wm_data_count.drop(['created_at', 'utm'], axis=1)
 
     # apps_loans_data = pd.DataFrame(pd.read_sql_query("select concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0)) as lead_wm, count(concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0))) as cnt_app, ifnull((select count(concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0))) from credit_application ca2 where ca2.loan_id is not null and ca2.creation_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca2.lead_provider is not null and concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0)) = concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0)) group by concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0))), 0) as cnt_loan from credit_application ca where ca.creation_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca.lead_provider is not null group by concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0));", conn))
-    apps_loans_data = pd.DataFrame(pd.read_sql_query("select ca.lead_provider, ca.wm_id, count(concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0))) as cnt_app, ifnull((select count(concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0))) from credit_application ca2 where ca2.loan_id is not null and ca2.creation_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca2.lead_provider is not null and concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0)) = concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0)) group by concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0))), 0) as cnt_loan from credit_application ca where ca.creation_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca.lead_provider is not null group by concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0));", conn))
+    apps_loans_data = pd.DataFrame(pd.read_sql_query("select ca.lead_provider, ca.wm_id, count(concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0))) as cnt_app, ifnull((select count(concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0))) from credit_application ca2 where ca2.loan_id is not null and date(ca2.creation_date) between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca2.lead_provider is not null and concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0)) = concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0)) group by concat_ws('_',ca2.lead_provider, coalesce(ca2.wm_id, 0))), 0) as cnt_loan from credit_application ca where date(ca.creation_date) between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and ca.lead_provider is not null group by concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0));", conn))
     apps_loans_data.loc[apps_loans_data['lead_provider'] == 'saleads.pro', 'wm_id'] = 0
     apps_loans_data = apps_loans_data.replace({'wm_id': {None: '0'}})
     apps_loans_data['wm_id'] = apps_loans_data['wm_id'].astype(str)
@@ -83,7 +87,7 @@ def web_id():
     source_data['AR_app%'] = round(source_data['cnt_loan'].astype(int) / source_data['cnt_app'].astype(int) * 100, 2)
     source_data['AR_click%'] = round(source_data['cnt_loan'].astype(int) / source_data['clicks'].astype(int) * 100, 2)
 
-    bad_loans = pd.DataFrame(pd.read_sql_query("select concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0)) as lead_wm, count(concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0))) as cnt_bad_loans from credit_application ca join loan l on ca.loan_id = l.id where ca.creation_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l.client_id in (SELECT l2.client_id FROM loan l2 GROUP By l2.client_id having(COUNT(l2.id) = 1)) and date_add(date(l.issue_date), interval 3 day) = date(l.close_date) group by concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0));", conn))
+    bad_loans = pd.DataFrame(pd.read_sql_query("select concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0)) as lead_wm, count(concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0))) as cnt_bad_loans from credit_application ca join loan l on ca.loan_id = l.id where date(ca.creation_date) between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l.client_id in (SELECT l2.client_id FROM loan l2 GROUP By l2.client_id having(COUNT(l2.id) = 1)) and date_add(date(l.issue_date), interval 3 day) = date(l.close_date) group by concat_ws('_',ca.lead_provider, coalesce(ca.wm_id, 0));", conn))
     source_data = source_data.join(bad_loans.set_index('lead_wm'), on='lead_wm')
     source_data = source_data.replace({'cnt_bad_loans': {None: '0'}})
     source_data['bad_loans%'] = round(source_data['cnt_bad_loans'].astype(int) / source_data['cnt_loan'].astype(int) * 100, 2)
@@ -121,6 +125,10 @@ def web_id():
     source_data = source_data.sort_values(by=['lead', 'clicks'], ascending=[True, False]).reset_index(drop=True)   # сортировка
     source_data['Date_1'] = date_1
     source_data['Date_2'] = date_2
+    source_data['Date_1'] = pd.to_datetime(source_data.Date_1)
+    source_data['Date_2'] = pd.to_datetime(source_data.Date_2)
+    source_data['Date_1'] = source_data['Date_1'].dt.strftime('%Y/%m/%d')
+    source_data['Date_2'] = source_data['Date_2'].dt.strftime('%Y/%m/%d')
     source_data['Date'] = source_data['Date_1'].astype(str) + ' - ' + source_data['Date_2'].astype(str)
     source_data = source_data.drop(['Date_1', 'Date_2'], axis=1)
 
@@ -135,6 +143,7 @@ def web_id():
     lead_sum = lead_sum.replace({'bad_loans%': {None: '0'}})
 
     source_data = source_data.drop(['lead', 'wm'], axis=1)
+    source_data = source_data.reindex(columns=['Date', 'lead_wm', 'clicks', 'cnt_app', 'cnt_loan', 'cnt_bad_loans', 'CR%', 'AR_click%', 'AR_app%', 'bad_loans%'])
 
     lead_sum['CR%'] = lead_sum['CR%'].astype(float)
     lead_sum['AR_app%'] = lead_sum['AR_app%'].astype(float)
@@ -143,8 +152,19 @@ def web_id():
     lead_sum = lead_sum.sort_values(by=['clicks'], ascending=[False]).reset_index(drop=True)
     lead_sum['Date_1'] = date_1
     lead_sum['Date_2'] = date_2
+    lead_sum['Date_1'] = pd.to_datetime(lead_sum.Date_1)
+    lead_sum['Date_2'] = pd.to_datetime(lead_sum.Date_2)
+    lead_sum['Date_1'] = lead_sum['Date_1'].dt.strftime('%Y/%m/%d')
+    lead_sum['Date_2'] = lead_sum['Date_2'].dt.strftime('%Y/%m/%d')
+    # lead_sum['Date'] = lead_sum['Date_1'].astype(str) + '-' + lead_sum['Date_2'].str[8:10].astype(str)
+
     lead_sum['Date'] = lead_sum['Date_1'].astype(str) + ' - ' + lead_sum['Date_2'].astype(str)
     lead_sum = lead_sum.drop(['Date_1', 'Date_2'], axis=1)
+    lead_sum = lead_sum.reindex(columns=['Date', 'lead', 'clicks', 'cnt_app', 'cnt_loan', 'cnt_bad_loans', 'CR%', 'AR_click%', 'AR_app%', 'bad_loans%'])
+
+    # print(lead_sum)
+    # print(source_data)
+    # exit()
 
     # numeric_columns = ['clicks', 'cnt_app', 'cnt_loan', 'cnt_bad_loans', 'CR%', 'AR_click%', 'AR_app%', 'bad_loans%']
     # lead_sum.style.format('{:.1f}', na_rep='-').format({'lead': lambda x: x.lower()}).highlight_null(null_color='lightgrey').highlight_max(color='yellowgreen', subset=numeric_columns).highlight_min(color='coral', subset=numeric_columns)
@@ -152,7 +172,8 @@ def web_id():
     # print(lead_sum)
     # print(source_data)
 
-    writer = pd.ExcelWriter("leads_wm_WEEK " + add_quotes(date_1) + " - " + add_quotes(str(datetime.date(pd.to_datetime(date_2) - pd.offsets.Day(1)))) + ".xlsx")
+    writer = pd.ExcelWriter("leads_wm_WEEK " + add_quotes(date_1) + " - " + add_quotes(str(datetime.date(pd.to_datetime(date_2)))) + ".xlsx")
+    # - pd.offsets.Day(1)
     lead_sum.to_excel(writer, "lead_sum")
     source_data.to_excel(writer, "lead_wm_report")
     writer.save()

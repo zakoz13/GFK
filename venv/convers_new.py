@@ -28,7 +28,7 @@ def conversion():
     for client_id in clients.client_id:
 
         # client_search = pd.DataFrame(pd.read_sql_query("select ca.client_id, ca.cnt_closed_loans as cnt_converse, min(l3.close_date) as min_close_date, ca.creation_date from credit_application ca join loan l3 on ca.loan_id = l3.id where ca.creation_date between (select min(l.close_date) from loan l where l.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l.loan_status_id = 4 and l.client_id = " + str(client_id) + " group by l.client_id) and (select date_add(MIN(l2.close_date),INTERVAL " + str(n) + " DAY) AS interval_days from loan l2 where l2.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l2.loan_status_id = 4 and l2.client_id = " + str(client_id) + " group by l2.client_id) and l3.client_id = " + str(client_id) + " and ca.loan_id is not null and l3.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + ";", conn))
-        client_search = pd.DataFrame(pd.read_sql_query("select ca.client_id, ca.cnt_closed_loans as cnt_converse, min(l3.close_date) as min_close_date, ca.creation_date from credit_application ca join loan l3 on ca.loan_id = l3.id where ca.creation_date between (select min(l.close_date) from loan l where l.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l.loan_status_id = 4 and l.client_id = l3.client_id group by l.client_id) and (select date_add(MIN(l2.close_date),INTERVAL " + str(n) + " DAY) AS interval_days from loan l2 where l2.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l2.loan_status_id = 4 and l2.client_id = l3.client_id group by l2.client_id) and l3.client_id = " + str(client_id) + " and ca.loan_id is not null and l3.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + ";", conn))
+        client_search = pd.DataFrame(pd.read_sql_query("select ca.client_id, max(ca.cnt_closed_loans) as cnt_converse, min(l3.close_date) as min_close_date, ca.creation_date from credit_application ca join loan l3 on ca.loan_id = l3.id where ca.creation_date between (select min(l.close_date) from loan l where l.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l.loan_status_id = 4 and l.client_id = l3.client_id group by l.client_id) and (select date_add(MIN(l2.close_date),INTERVAL " + str(n) + " DAY) AS interval_days from loan l2 where l2.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + " and l2.loan_status_id = 4 and l2.client_id = l3.client_id group by l2.client_id) and l3.client_id = " + str(client_id) + " and ca.loan_id is not null and l3.close_date between " + add_quotes(date_1) + " and " + add_quotes(date_2) + ";", conn))
 
         search_clients.append(client_search)
 
@@ -65,10 +65,10 @@ def conversion():
     cli.pop("client_id")
 
     final = pd.merge(cli, res, on="loan_gen")
-
-    writer = pd.ExcelWriter("converse" + add_quotes(date_1) + " - " + add_quotes(str(datetime.date(pd.to_datetime(date_2) - pd.offsets.Day(1)))) + " days " + str(n) + " .xlsx")
-    final.to_excel(writer, "report")
-    writer.save()
+    print(final)
+    # writer = pd.ExcelWriter("converse" + add_quotes(date_1) + " - " + add_quotes(str(datetime.date(pd.to_datetime(date_2) - pd.offsets.Day(1)))) + " days " + str(n) + " .xlsx")
+    # final.to_excel(writer, "report")
+    # writer.save()
 
 
 conversion()

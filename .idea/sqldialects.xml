@@ -3,16 +3,11 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/venv/LTV.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/LTV_new.py" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/venv/Vetal test.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/approval_apps.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/convers_new.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/conversion.py" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/venv/debt_test.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/insurance_resale.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/ltv_clients.py" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/venv/sip_calls.py" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/venv/sql_testing.py" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/venv/testing.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/web_leads_month.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/web_leads_week.py" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/venv/webs_leads.py" dialect="MySQL" />
